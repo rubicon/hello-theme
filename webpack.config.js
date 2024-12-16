@@ -1,49 +1,22 @@
 /**
  * Grunt webpack task config
- * @package Elementor
+ *
+ * @package
  */
 const path = require( 'path' );
+const defaultConfig = require( '@wordpress/scripts/config/webpack.config' );
 
-const CopyPlugin = require( 'copy-webpack-plugin' );
 const TerserPlugin = require( 'terser-webpack-plugin' );
 
-const copyPluginConfig = new CopyPlugin( {
-	patterns: [
-		{
-			from: '**/*',
-			context: __dirname,
-			to: path.resolve( __dirname, 'build' ),
-			// Terser skip this file for minimization
-			info: { minimized: true },
-			globOptions: {
-				ignore: [
-					'**.zip',
-					'**.css',
-					'**/karma.conf.js',
-					'**/assets/dev/**',
-					'**/assets/scss/**',
-					'**/assets/js/qunit-tests*',
-					'**/bin/**',
-					'**/build/**',
-					'**/composer.json',
-					'**/composer.lock',
-					'**/Gruntfile.js',
-					'**/node_modules/**',
-					'**/npm-debug.log',
-					'**/package-lock.json',
-					'**/package.json',
-					'**/phpcs.xml',
-					'**/README.md',
-					'**/webpack.config.js',
-					'**/vendor/**',
-				],
-			},
-		},
-	],
-} );
+const entry = {
+	'hello-editor': path.resolve( __dirname, './assets/dev/js/editor/hello-editor.js' ),
+	'hello-frontend': path.resolve( __dirname, './assets/dev/js/frontend/hello-frontend.js' ),
+	'hello-admin': path.resolve( __dirname, './assets/dev/js/admin/hello-admin.js' ),
+};
 
 const moduleRules = {
 	rules: [
+		...defaultConfig.module.rules,
 		{
 			test: /\.js$/,
 			exclude: /node_modules/,
@@ -51,7 +24,7 @@ const moduleRules = {
 				{
 					loader: 'babel-loader',
 					options: {
-						presets: [ '@babel/preset-env' ],
+						presets: [ '@babel/preset-env', '@babel/preset-react' ],
 						plugins: [
 							[ '@babel/plugin-proposal-class-properties' ],
 							[ '@babel/plugin-transform-runtime' ],
@@ -65,32 +38,37 @@ const moduleRules = {
 	],
 };
 
-const entry = {
-	'hello-editor': path.resolve( __dirname, './assets/dev/js/editor/hello-editor.js' ),
-	'hello-frontend': path.resolve( __dirname, './assets/dev/js/frontend/hello-frontend.js' ),
+const commonConfig = {
+	...defaultConfig,
+	target: 'web',
+	context: __dirname,
+	module: moduleRules,
+	entry,
+	output: {
+		...defaultConfig.output,
+		path: path.resolve( __dirname, './assets/js' ),
+		filename: '[name].js',
+	},
 };
 
 const webpackConfig = {
-	target: 'web',
-	context: __dirname,
-	module: moduleRules,
-	entry: entry,
+	...commonConfig,
 	mode: 'development',
 	output: {
-		path: path.resolve( __dirname, './build/assets/js' ),
-		filename: '[name].js',
+		...commonConfig.output,
 		devtoolModuleFilenameTemplate: './[resource]',
 	},
-};
-
-const webpackProductionConfig = {
-	target: 'web',
-	context: __dirname,
-	module: moduleRules,
 	entry: {
 		...entry,
 	},
+	devtool: 'source-map',
+};
+
+const webpackProductionConfig = {
+	...commonConfig,
+	mode: 'production',
 	optimization: {
+		...defaultConfig.optimization || {},
 		minimize: true,
 		minimizer: [
 			new TerserPlugin( {
@@ -101,38 +79,19 @@ const webpackProductionConfig = {
 			} ),
 		],
 	},
-	mode: 'production',
-	output: {
-		path: path.resolve( __dirname, './build/assets/js' ),
-		filename: '[name].js',
-	},
 	performance: { hints: false },
 };
 
 // Add minified entry points
 Object.entries( webpackProductionConfig.entry ).forEach( ( [ wpEntry, value ] ) => {
 	webpackProductionConfig.entry[ wpEntry + '.min' ] = value;
-
-	delete webpackProductionConfig.entry[ wpEntry ];
 } );
 
-const localOutputPath = { ...webpackProductionConfig.output, path: path.resolve( __dirname, './assets/js' ) };
+webpackProductionConfig.plugins = defaultConfig.plugins;
 
 module.exports = ( env ) => {
-	if ( env.developmentLocalWithWatch ) {
-		return { ...webpackConfig, watch: true, devtool: 'source-map', output: localOutputPath };
-	}
-
-	if ( env.productionLocalWithWatch ) {
-		return { ...webpackProductionConfig, watch: true, devtool: 'source-map', output: localOutputPath };
-	}
-
-	if ( env.productionLocal ) {
-		return { ...webpackProductionConfig, devtool: 'source-map', output: localOutputPath };
-	}
-
 	if ( env.developmentLocal ) {
-		return { ...webpackConfig, devtool: 'source-map', output: localOutputPath };
+		return { ...webpackConfig, watch: true };
 	}
 
 	if ( env.production ) {
@@ -140,7 +99,7 @@ module.exports = ( env ) => {
 	}
 
 	if ( env.development ) {
-		return { ...webpackConfig, plugins: [ copyPluginConfig ] };
+		return webpackConfig;
 	}
 
 	throw new Error( 'missing or invalid --env= development/production/developmentWithWatch/productionWithWatch' );

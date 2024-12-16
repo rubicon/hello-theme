@@ -1,9 +1,14 @@
 /**
- * General - https://codex.wordpress.org/CSS#WordPress_Generated_Classes
- * DO NOT CHANGE THIS FILE
- * to override any of the settings in this section, add your styling code in the custom directory.
+ * General - https://wordpress.org/documentation/article/css/
  */
 
+.page-content,
+.comments-area {
+
+	a {
+		text-decoration: underline;
+	}
+}
 
 .alignright {
 	float: right;
@@ -18,20 +23,17 @@
 .aligncenter {
 	clear: both;
 	display: block;
-	margin-left: auto;
-	margin-right: auto;
+	margin-inline: auto;
 }
 
 //Gutenberg support
 .alignwide {
-	margin-left: -80px;
-	margin-right: -80px;
+	margin-inline: -80px;
 }
 
 //Gutenberg support
 .alignfull {
-	margin-left: calc(50% - 50vw);
-	margin-right: calc(50% - 50vw);
+	margin-inline: calc(50% - 50vw);
 	max-width: 100vw;
 	width: 100vw;
 
@@ -41,7 +43,7 @@
 }
 
 .wp-caption {
-	margin-bottom: 1.25rem;
+	margin-block-end: 1.25rem;
 	max-width: 100%;
 
 	&.alignleft {
@@ -54,8 +56,7 @@
 
 	img {
 		display: block;
-		margin-left: auto;
-		margin-right: auto;
+		margin-inline: auto;
 	}
 }
 
@@ -72,6 +73,8 @@
 }
 
 .pagination {
+	display: flex;
+	justify-content: space-between;
 	margin: 20px auto;
 }
 
@@ -86,4 +89,14 @@
 
 .hide {
     display: none !important;
+}
+
+.post-password-form p {
+	width: 100%;
+	display: flex;
+	align-items: flex-end;
+}
+
+.post-password-form [type=submit] {
+	margin-inline-start: 3px;
 }

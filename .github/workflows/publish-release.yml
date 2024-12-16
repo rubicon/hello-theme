@@ -10,7 +10,7 @@ on:
 jobs:
   merge-release-branch-to-develop:
     if: (github.actor == 'ronkelementor' || github.actor == 'KingYes') && startsWith(github.repository, 'elementor/')
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout master branch
         uses: actions/checkout@v2
@@ -60,7 +60,7 @@ jobs:
         run: |
           npm install --no-package-lock --no-save replace-in-file@6.2.0
           node ./.github/scripts/update-version-in-files.js
-          npx grunt wp_readme
+          #npx grunt wp_readme
       - name: Check if readme.txt update
         env:
           VERSION: ${{ env.PACKAGE_VERSION }}
