@@ -1,12 +1,15 @@
 /**
- * Style for your classic editor.
+ * WordPress editor styles
  */
 
-// Root
 @import "reset/variables";
 
+body {
+	font-family: $font-family-base;
+}	
+
 p {
-	margin-bottom: $sm-margin;
+	margin-block-end: $sm-margin;
 }
 
 img {
